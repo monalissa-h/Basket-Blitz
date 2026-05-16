@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Basket Blitz Mobile</title>
+<title>Basket Blitz</title>
 
 <style>
 body {
@@ -15,7 +15,7 @@ body {
     height: 100vh;
     font-family: Arial;
     color: white;
-    touch-action: none; /* IMPORTANT for mobile controls */
+    touch-action: none;
 }
 
 .game {
@@ -28,23 +28,18 @@ body {
     border: 2px solid white;
 }
 
-/* HUD */
 #hud {
     position: absolute;
     top: 10px;
     left: 10px;
-    z-index: 10;
 }
 
-/* Basket */
 .basket {
     position: absolute;
     bottom: 20px;
     font-size: 40px;
-    left: 180px;
 }
 
-/* Balls */
 .ball {
     position: absolute;
     width: 30px;
@@ -55,23 +50,21 @@ body {
 .green { background: limegreen; }
 .red { background: red; }
 
-/* Game Over */
-#gameOverScreen {
+#gameOver {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.95);
     display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 20;
+    text-align: center;
 }
 
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
+input, button {
+    padding: 10px;
+    margin-top: 10px;
 }
 </style>
 </head>
@@ -87,123 +80,147 @@ button {
 
     <div class="basket" id="basket">🧺</div>
 
-    <div id="gameOverScreen">
-        <h1>💀 GAME OVER</h1>
+    <div id="gameOver">
+        <h1>Game Over</h1>
+
         <p id="finalScore"></p>
-        <button onclick="restartGame()">Restart</button>
+
+        <input id="name" placeholder="Enter name">
+
+        <button onclick="saveScore()">Save Score</button>
+        <button onclick="restart()">Restart</button>
+
+        <h3>🌍 Global Leaderboard</h3>
+        <ol id="board"></ol>
     </div>
 
 </div>
 
-<script>
+<script type="module">
+
+// ================= FIREBASE =================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  limit,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAcM93TLVcWsM3mndwLFMW3bQ7ay34q1pk",
+  authDomain: "basket-blitz.firebaseapp.com",
+  projectId: "basket-blitz",
+  storageBucket: "basket-blitz.firebasestorage.app",
+  messagingSenderId: "1061093319752",
+  appId: "1:1061093319752:web:b901a2069becddaf9f247d"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ================= GAME =================
+
 const game = document.getElementById("game");
 const basket = document.getElementById("basket");
 const livesBoard = document.getElementById("lives");
 const scoreBoard = document.getElementById("score");
-const gameOverScreen = document.getElementById("gameOverScreen");
+const gameOverScreen = document.getElementById("gameOver");
 const finalScore = document.getElementById("finalScore");
+const board = document.getElementById("board");
 
 let basketX = 180;
+let targetX = 180;
+
 let lives = 5;
 let score = 0;
 let speed = 4;
-let gameOver = false;
+let dead = false;
 
-// ---------------- HUD ----------------
+// ================= HUD =================
 function updateHUD() {
     livesBoard.innerHTML = "❤️".repeat(lives);
     scoreBoard.innerHTML = "Score: " + score;
 }
 
-// ---------------- MOVE BASKET ----------------
-function updateBasket() {
+// ================= SMOOTH MOBILE MOVEMENT =================
+function animateBasket() {
+    basketX += (targetX - basketX) * 0.18;
+
     if (basketX < 0) basketX = 0;
-    if (basketX > game.clientWidth - 40) basketX = game.clientWidth - 40;
+    if (basketX > game.clientWidth - 40)
+        basketX = game.clientWidth - 40;
+
     basket.style.left = basketX + "px";
+
+    requestAnimationFrame(animateBasket);
 }
 
-// Keyboard
-document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft") basketX -= 25;
-    if (e.key === "ArrowRight") basketX += 25;
-    updateBasket();
+// ================= CONTROLS =================
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") targetX -= 30;
+    if (e.key === "ArrowRight") targetX += 30;
 });
 
-// Mouse
-game.addEventListener("mousemove", (e) => {
-    const rect = game.getBoundingClientRect();
-    basketX = e.clientX - rect.left - 20;
-    updateBasket();
+game.addEventListener("mousemove", e => {
+    const r = game.getBoundingClientRect();
+    targetX = e.clientX - r.left - 20;
 });
 
-// ---------------- TOUCH CONTROL (IMPORTANT) ----------------
-let touchActive = false;
+game.addEventListener("touchstart", handle);
+game.addEventListener("touchmove", handle);
 
-game.addEventListener("touchstart", (e) => {
-    touchActive = true;
-});
+function handle(e) {
+    const r = game.getBoundingClientRect();
+    targetX = e.touches[0].clientX - r.left - 20;
+}
 
-game.addEventListener("touchmove", (e) => {
-    if (!touchActive) return;
-
-    const rect = game.getBoundingClientRect();
-    const touchX = e.touches[0].clientX;
-
-    basketX = touchX - rect.left - 20;
-    updateBasket();
-});
-
-game.addEventListener("touchend", () => {
-    touchActive = false;
-});
-
-// ---------------- SPAWN BALLS ----------------
+// ================= BALLS =================
 function spawnBall() {
-    if (gameOver) return;
+    if (dead) return;
 
     const ball = document.createElement("div");
-    let isGreen = Math.random() < 0.5;
+    const green = Math.random() < 0.5;
 
-    ball.classList.add("ball", isGreen ? "green" : "red");
+    ball.className = "ball " + (green ? "green" : "red");
     ball.style.left = Math.random() * (game.clientWidth - 30) + "px";
     ball.style.top = "0px";
+
     game.appendChild(ball);
 
-    moveBall(ball, isGreen ? "green" : "red");
+    fall(ball, green);
 }
 
-// ---------------- MOVE BALL ----------------
-function moveBall(ball, type) {
-    let top = 0;
+function fall(ball, green) {
+    let y = 0;
 
-    let interval = setInterval(() => {
-        if (gameOver) {
-            clearInterval(interval);
+    let id = setInterval(() => {
+
+        if (dead) {
+            clearInterval(id);
             ball.remove();
             return;
         }
 
-        top += speed;
-        ball.style.top = top + "px";
+        y += speed;
+        ball.style.top = y + "px";
 
-        let objX = parseInt(ball.style.left);
-        let objY = top;
+        let x = parseInt(ball.style.left);
         let basketY = game.clientHeight - 80;
 
         if (
-            objY > basketY &&
-            objY < basketY + 70 &&
-            objX > basketX - 30 &&
-            objX < basketX + 40
+            y > basketY &&
+            x > basketX - 30 &&
+            x < basketX + 40
         ) {
             ball.remove();
-            clearInterval(interval);
+            clearInterval(id);
 
-            if (type === "green") {
-                score++;
-            } else {
-                lives--;
-            }
+            if (green) score++;
+            else lives--;
 
             if (score % 5 === 0) speed += 0.5;
 
@@ -211,11 +228,11 @@ function moveBall(ball, type) {
             checkGameOver();
         }
 
-        if (top > game.clientHeight) {
+        if (y > game.clientHeight) {
             ball.remove();
-            clearInterval(interval);
+            clearInterval(id);
 
-            if (type === "green") lives--;
+            if (green) lives--;
 
             updateHUD();
             checkGameOver();
@@ -224,36 +241,72 @@ function moveBall(ball, type) {
     }, 30);
 }
 
-// ---------------- GAME OVER ----------------
+// ================= GAME OVER =================
 function checkGameOver() {
     if (lives <= 0) {
-        gameOver = true;
+        dead = true;
         gameOverScreen.style.display = "flex";
-        finalScore.innerHTML = "Score: " + score;
+        finalScore.innerText = "Score: " + score;
+        loadBoard();
     }
 }
 
-// ---------------- RESTART ----------------
-function restartGame() {
-    lives = 5;
-    score = 0;
-    speed = 4;
-    gameOver = false;
-    basketX = 180;
+// ================= FIREBASE LEADERBOARD =================
+window.saveScore = async function () {
 
-    updateBasket();
-    updateHUD();
-    gameOverScreen.style.display = "none";
+    let name = document.getElementById("name").value || "Anon";
 
-    document.querySelectorAll(".ball").forEach(b => b.remove());
+    await addDoc(collection(db, "leaderboard"), {
+        name,
+        score,
+        time: Date.now()
+    });
+
+    loadBoard();
+};
+
+async function loadBoard() {
+
+    const q = query(
+        collection(db, "leaderboard"),
+        orderBy("score", "desc"),
+        limit(10)
+    );
+
+    const snap = await getDocs(q);
+
+    board.innerHTML = "";
+
+    let rank = 1;
+
+    snap.forEach(doc => {
+
+        const d = doc.data();
+
+        let medal = "";
+        if (rank === 1) medal = "🥇 ";
+        else if (rank === 2) medal = "🥈 ";
+        else if (rank === 3) medal = "🥉 ";
+
+        const li = document.createElement("li");
+        li.textContent = medal + d.name + " - " + d.score;
+
+        board.appendChild(li);
+        rank++;
+    });
 }
 
-// ---------------- LOOP ----------------
-setInterval(spawnBall, 700);
+// ================= RESTART =================
+window.restart = function () {
+    location.reload();
+};
 
-// init
+// ================= START =================
+setInterval(spawnBall, 700);
 updateHUD();
-updateBasket();
+animateBasket();
+loadBoard();
+
 </script>
 
 </body>
