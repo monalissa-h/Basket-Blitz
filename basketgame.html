@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Basket Collector Game</title>
+
+<style>
+body {
+    margin: 0;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial;
+    color: white;
+}
+
+.game {
+    position: relative;
+    width: 400px;
+    height: 600px;
+    background: #222;
+    overflow: hidden;
+    border: 2px solid white;
+}
+
+/* HUD */
+#hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    font-size: 16px;
+}
+
+/* Basket */
+.basket {
+    position: absolute;
+    bottom: 20px;
+    font-size: 40px;
+    left: 180px;
+}
+
+/* Objects */
+.ball {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.green {
+    background: limegreen;
+}
+
+.red {
+    background: red;
+}
+
+/* Game Over */
+#gameOverScreen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game" id="game">
+
+    <!-- HUD -->
+    <div id="hud">
+        <div id="lives">❤️❤️❤️❤️❤️</div>
+        <div id="score">Score: 0</div>
+    </div>
+
+    <!-- Basket -->
+    <div class="basket" id="basket">🧺</div>
+
+    <!-- Game Over -->
+    <div id="gameOverScreen">
+        <h1>💀 GAME OVER</h1>
+        <p id="finalScore"></p>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+
+</div>
+
+<script>
+const game = document.getElementById("game");
+const basket = document.getElementById("basket");
+const livesBoard = document.getElementById("lives");
+const scoreBoard = document.getElementById("score");
+const gameOverScreen = document.getElementById("gameOverScreen");
+const finalScore = document.getElementById("finalScore");
+
+let basketX = 180;
+let lives = 5;
+let score = 0;
+let speed = 4;
+let gameOver = false;
+
+// HUD update
+function updateHUD() {
+    livesBoard.innerHTML = "❤️".repeat(lives);
+    scoreBoard.innerHTML = "Score: " + score;
+}
+
+// Controls
+document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") basketX -= 25;
+    if (e.key === "ArrowRight") basketX += 25;
+    updateBasket();
+});
+
+game.addEventListener("mousemove", (e) => {
+    const rect = game.getBoundingClientRect();
+    basketX = e.clientX - rect.left - 20;
+    updateBasket();
+});
+
+function updateBasket() {
+    if (basketX < 0) basketX = 0;
+    if (basketX > 360) basketX = 360;
+    basket.style.left = basketX + "px";
+}
+
+// Spawn balls
+function spawnBall() {
+    if (gameOver) return;
+
+    const ball = document.createElement("div");
+    let isGreen = Math.random() < 0.5;
+
+    ball.classList.add("ball", isGreen ? "green" : "red");
+    ball.style.left = Math.random() * 370 + "px";
+    ball.style.top = "0px";
+    game.appendChild(ball);
+
+    moveBall(ball, isGreen ? "green" : "red");
+}
+
+// Move logic
+function moveBall(ball, type) {
+    let top = 0;
+
+    let interval = setInterval(() => {
+        if (gameOver) {
+            clearInterval(interval);
+            ball.remove();
+            return;
+        }
+
+        top += speed;
+        ball.style.top = top + "px";
+
+        let objX = parseInt(ball.style.left);
+        let objY = top;
+        let basketY = 520;
+
+        // Collision
+        if (
+            objY > basketY &&
+            objY < basketY + 70 &&
+            objX > basketX - 30 &&
+            objX < basketX + 40
+        ) {
+            ball.remove();
+            clearInterval(interval);
+
+            if (type === "green") {
+                score++;
+            } else {
+                lives--;
+            }
+
+            if (score % 5 === 0) speed += 0.5;
+
+            updateHUD();
+            checkGameOver();
+        }
+
+        // Missed ball
+        if (top > 600) {
+            ball.remove();
+            clearInterval(interval);
+
+            if (type === "green") lives--; // missed good ball = penalty
+
+            updateHUD();
+            checkGameOver();
+        }
+
+    }, 30);
+}
+
+// Game over
+function checkGameOver() {
+    if (lives <= 0) {
+        gameOver = true;
+        gameOverScreen.style.display = "flex";
+        finalScore.innerHTML = "Score: " + score;
+    }
+}
+
+// Restart
+function restartGame() {
+    lives = 5;
+    score = 0;
+    speed = 4;
+    gameOver = false;
+    basketX = 180;
+
+    updateBasket();
+    updateHUD();
+    gameOverScreen.style.display = "none";
+
+    document.querySelectorAll(".ball").forEach(b => b.remove());
+}
+
+// Loop
+setInterval(spawnBall, 700);
+
+// init
+updateHUD();
+updateBasket();
+</script>
+
+</body>
+</html>
