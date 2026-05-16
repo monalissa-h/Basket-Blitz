@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Basket Blitz</title>
+<title>Basket Blitz Mobile</title>
 
 <style>
 body {
@@ -15,6 +15,7 @@ body {
     height: 100vh;
     font-family: Arial;
     color: white;
+    touch-action: none; /* IMPORTANT for mobile controls */
 }
 
 .game {
@@ -27,6 +28,7 @@ body {
     border: 2px solid white;
 }
 
+/* HUD */
 #hud {
     position: absolute;
     top: 10px;
@@ -34,13 +36,15 @@ body {
     z-index: 10;
 }
 
+/* Basket */
 .basket {
     position: absolute;
     bottom: 20px;
-    left: 180px;
     font-size: 40px;
+    left: 180px;
 }
 
+/* Balls */
 .ball {
     position: absolute;
     width: 30px;
@@ -48,61 +52,26 @@ body {
     border-radius: 50%;
 }
 
-.green {
-    background: limegreen;
-}
+.green { background: limegreen; }
+.red { background: red; }
 
-.red {
-    background: red;
-}
-
+/* Game Over */
 #gameOverScreen {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.95);
+    background: rgba(0,0,0,0.9);
     display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 20;
-    text-align: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-input {
-    padding: 10px;
-    margin-top: 10px;
-    width: 200px;
-    border: none;
-    border-radius: 5px;
 }
 
 button {
     padding: 10px 20px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 5px;
+    font-size: 16px;
     cursor: pointer;
-}
-
-#leaderboard {
-    margin-top: 20px;
-    width: 90%;
-    background: #333;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-#leaderboard ol {
-    text-align: left;
-    padding-left: 25px;
-}
-
-#leaderboard li {
-    margin: 5px 0;
-    font-size: 18px;
 }
 </style>
 </head>
@@ -120,31 +89,19 @@ button {
 
     <div id="gameOverScreen">
         <h1>💀 GAME OVER</h1>
-
         <p id="finalScore"></p>
-
-        <input type="text" id="playerName" placeholder="Enter your name">
-
-        <button onclick="saveScore()">Save Score</button>
         <button onclick="restartGame()">Restart</button>
-
-        <div id="leaderboard">
-            <h2>🏆 Leaderboard</h2>
-            <ol id="leaderboardList"></ol>
-        </div>
     </div>
 
 </div>
 
 <script>
-
 const game = document.getElementById("game");
 const basket = document.getElementById("basket");
 const livesBoard = document.getElementById("lives");
 const scoreBoard = document.getElementById("score");
 const gameOverScreen = document.getElementById("gameOverScreen");
 const finalScore = document.getElementById("finalScore");
-const leaderboardList = document.getElementById("leaderboardList");
 
 let basketX = 180;
 let lives = 5;
@@ -152,76 +109,74 @@ let score = 0;
 let speed = 4;
 let gameOver = false;
 
-// ================= HUD =================
-
+// ---------------- HUD ----------------
 function updateHUD() {
     livesBoard.innerHTML = "❤️".repeat(lives);
     scoreBoard.innerHTML = "Score: " + score;
 }
 
-// ================= BASKET =================
-
+// ---------------- MOVE BASKET ----------------
 function updateBasket() {
-
     if (basketX < 0) basketX = 0;
-
-    if (basketX > game.clientWidth - 40) {
-        basketX = game.clientWidth - 40;
-    }
-
+    if (basketX > game.clientWidth - 40) basketX = game.clientWidth - 40;
     basket.style.left = basketX + "px";
 }
 
 // Keyboard
-
 document.addEventListener("keydown", (e) => {
-
     if (e.key === "ArrowLeft") basketX -= 25;
-
     if (e.key === "ArrowRight") basketX += 25;
-
     updateBasket();
 });
 
 // Mouse
-
 game.addEventListener("mousemove", (e) => {
-
     const rect = game.getBoundingClientRect();
-
     basketX = e.clientX - rect.left - 20;
-
     updateBasket();
 });
 
-// ================= BALLS =================
+// ---------------- TOUCH CONTROL (IMPORTANT) ----------------
+let touchActive = false;
 
+game.addEventListener("touchstart", (e) => {
+    touchActive = true;
+});
+
+game.addEventListener("touchmove", (e) => {
+    if (!touchActive) return;
+
+    const rect = game.getBoundingClientRect();
+    const touchX = e.touches[0].clientX;
+
+    basketX = touchX - rect.left - 20;
+    updateBasket();
+});
+
+game.addEventListener("touchend", () => {
+    touchActive = false;
+});
+
+// ---------------- SPAWN BALLS ----------------
 function spawnBall() {
-
     if (gameOver) return;
 
     const ball = document.createElement("div");
-
     let isGreen = Math.random() < 0.5;
 
     ball.classList.add("ball", isGreen ? "green" : "red");
-
-    ball.style.left =
-        Math.random() * (game.clientWidth - 30) + "px";
-
+    ball.style.left = Math.random() * (game.clientWidth - 30) + "px";
     ball.style.top = "0px";
-
     game.appendChild(ball);
 
     moveBall(ball, isGreen ? "green" : "red");
 }
 
+// ---------------- MOVE BALL ----------------
 function moveBall(ball, type) {
-
     let top = 0;
 
     let interval = setInterval(() => {
-
         if (gameOver) {
             clearInterval(interval);
             ball.remove();
@@ -229,7 +184,6 @@ function moveBall(ball, type) {
         }
 
         top += speed;
-
         ball.style.top = top + "px";
 
         let objX = parseInt(ball.style.left);
@@ -242,9 +196,7 @@ function moveBall(ball, type) {
             objX > basketX - 30 &&
             objX < basketX + 40
         ) {
-
             ball.remove();
-
             clearInterval(interval);
 
             if (type === "green") {
@@ -253,151 +205,55 @@ function moveBall(ball, type) {
                 lives--;
             }
 
-            if (score % 5 === 0 && score !== 0) {
-                speed += 0.5;
-            }
+            if (score % 5 === 0) speed += 0.5;
 
             updateHUD();
-
             checkGameOver();
         }
 
         if (top > game.clientHeight) {
-
             ball.remove();
-
             clearInterval(interval);
 
-            if (type === "green") {
-                lives--;
-            }
+            if (type === "green") lives--;
 
             updateHUD();
-
             checkGameOver();
         }
 
     }, 30);
 }
 
-// ================= GAME OVER =================
-
+// ---------------- GAME OVER ----------------
 function checkGameOver() {
-
     if (lives <= 0) {
-
         gameOver = true;
-
         gameOverScreen.style.display = "flex";
-
         finalScore.innerHTML = "Score: " + score;
-
-        renderLeaderboard();
     }
 }
 
-// ================= RESTART =================
-
+// ---------------- RESTART ----------------
 function restartGame() {
-
     lives = 5;
     score = 0;
     speed = 4;
     gameOver = false;
     basketX = 180;
 
-    updateHUD();
     updateBasket();
-
+    updateHUD();
     gameOverScreen.style.display = "none";
 
-    document.querySelectorAll(".ball").forEach(ball => {
-        ball.remove();
-    });
+    document.querySelectorAll(".ball").forEach(b => b.remove());
 }
 
-// ================= LEADERBOARD =================
-
-function getLeaderboard() {
-
-    return JSON.parse(
-        localStorage.getItem("basketLeaderboard")
-    ) || [];
-}
-
-function saveScore() {
-
-    const playerInput =
-        document.getElementById("playerName");
-
-    let playerName = playerInput.value.trim();
-
-    if (playerName === "") {
-        playerName = "Anonymous";
-    }
-
-    let leaderboard = getLeaderboard();
-
-    leaderboard.push({
-        name: playerName,
-        score: score
-    });
-
-    leaderboard.sort((a, b) => b.score - a.score);
-
-    leaderboard = leaderboard.slice(0, 10);
-
-    localStorage.setItem(
-        "basketLeaderboard",
-        JSON.stringify(leaderboard)
-    );
-
-    renderLeaderboard();
-
-    playerInput.value = "";
-}
-
-function renderLeaderboard() {
-
-    const leaderboard = getLeaderboard();
-
-    leaderboardList.innerHTML = "";
-
-    let rank = 1;
-
-    leaderboard.forEach((entry) => {
-
-        const li = document.createElement("li");
-
-        let medal = "";
-
-        if (rank === 1) {
-            medal = "🥇 ";
-        }
-        else if (rank === 2) {
-            medal = "🥈 ";
-        }
-        else if (rank === 3) {
-            medal = "🥉 ";
-        }
-
-        li.textContent =
-            `${medal}${entry.name} — ${entry.score}`;
-
-        leaderboardList.appendChild(li);
-
-        rank++;
-    });
-}
-
-// ================= START =================
-
+// ---------------- LOOP ----------------
 setInterval(spawnBall, 700);
 
+// init
 updateHUD();
 updateBasket();
-renderLeaderboard();
-
 </script>
 
 </body>
