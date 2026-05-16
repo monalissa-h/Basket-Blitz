@@ -32,6 +32,7 @@ body {
     position: absolute;
     top: 10px;
     left: 10px;
+    z-index: 5;
 }
 
 .basket {
@@ -76,6 +77,10 @@ input, button {
     <div id="hud">
         <div id="lives">❤️❤️❤️❤️❤️</div>
         <div id="score">Score: 0</div>
+
+        <div style="margin-top:6px; font-size:14px; color:lime; font-weight:bold;">
+            🎯 Catch ONLY the GREEN balls!
+        </div>
     </div>
 
     <div class="basket" id="basket">🧺</div>
@@ -107,7 +112,7 @@ import {
   query,
   orderBy,
   limit,
-  getDocs
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -146,7 +151,7 @@ function updateHUD() {
     scoreBoard.innerHTML = "Score: " + score;
 }
 
-// ================= SMOOTH MOBILE MOVEMENT =================
+// ================= SMOOTH MOVEMENT =================
 function animateBasket() {
     basketX += (targetX - basketX) * 0.18;
 
@@ -247,11 +252,10 @@ function checkGameOver() {
         dead = true;
         gameOverScreen.style.display = "flex";
         finalScore.innerText = "Score: " + score;
-        loadBoard();
     }
 }
 
-// ================= FIREBASE LEADERBOARD =================
+// ================= FIREBASE =================
 window.saveScore = async function () {
 
     let name = document.getElementById("name").value || "Anon";
@@ -261,11 +265,10 @@ window.saveScore = async function () {
         score,
         time: Date.now()
     });
-
-    loadBoard();
 };
 
-async function loadBoard() {
+// 🌍 REAL-TIME GLOBAL LEADERBOARD (FIXED)
+function loadBoardRealtime() {
 
     const q = query(
         collection(db, "leaderboard"),
@@ -273,26 +276,27 @@ async function loadBoard() {
         limit(10)
     );
 
-    const snap = await getDocs(q);
+    onSnapshot(q, (snapshot) => {
 
-    board.innerHTML = "";
+        board.innerHTML = "";
 
-    let rank = 1;
+        let rank = 1;
 
-    snap.forEach(doc => {
+        snapshot.forEach(doc => {
 
-        const d = doc.data();
+            const d = doc.data();
 
-        let medal = "";
-        if (rank === 1) medal = "🥇 ";
-        else if (rank === 2) medal = "🥈 ";
-        else if (rank === 3) medal = "🥉 ";
+            let medal = "";
+            if (rank === 1) medal = "🥇 ";
+            else if (rank === 2) medal = "🥈 ";
+            else if (rank === 3) medal = "🥉 ";
 
-        const li = document.createElement("li");
-        li.textContent = medal + d.name + " - " + d.score;
+            const li = document.createElement("li");
+            li.textContent = medal + d.name + " - " + d.score;
 
-        board.appendChild(li);
-        rank++;
+            board.appendChild(li);
+            rank++;
+        });
     });
 }
 
@@ -305,7 +309,7 @@ window.restart = function () {
 setInterval(spawnBall, 700);
 updateHUD();
 animateBasket();
-loadBoard();
+loadBoardRealtime();
 
 </script>
 
