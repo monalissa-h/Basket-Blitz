@@ -74,10 +74,18 @@ input, button {
 
 <div class="game" id="game">
 
+    <!-- SOUND EFFECTS (EMBEDDED) -->
+    <audio id="goodSound" preload="auto">
+        <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAFAAAEygBRUVFRUVFRUVFRUVFRUVFRUVFRfX19fX19fX19fX19fX19fX19fX2oqKioqKioqKioqKioqKioqKioqNTU1NTU1NTU1NTU1NTU1NTU1NTU//////////////////////////8AAAAATGF2YzU5LjM3AAAAAAAAAAAAAAAAJAMGAAAAAAAABMrST6lmAAAAAAD/+1DEAAAKAFUoVZ0ACYSRLHc3kkMAsAru2u9icnWgWcQGCEM1khIE0Zzz1O1sWGMpY1AASucCMcBgZwMwUtWWbRTa+77XHcfyMRiMUlJSU9PT09vMPDAAAAAAPDz//8AAQHn/+k8AAAAJfuPxsAAAAAAJlO96hCVu8YIUoBzI29VIzwUg4KHxrYOkuBwoxqQL5Fxhanh6mv0JFZsrrz6DjgyxGz/c+VwHbBoCtsIYF//9eH5fundmTPtDM7///9/PP/rVSQKqgV6UHVMRwAeM//tSxASDywQ9HB3/ACFfB6LB3+kYBjAcjAcwoowO8HsMIBAxDBgQ7wxWcSeN6bLUzFoBDkwcgBNFgJwwIcB9MFUIfDW4B/00kyqjMLC8MGECowQAdTBWArAwFIJAMDADr+3ZkMHa3cjqdxkZ3IoBKqwkBRgJQBGdn4cqGBsADhgEIC2VAMQwEoILMILPxDVMTlcwMwJjMRHBdDBNgJ0wJUBQOcrNSSMkDDAzVoMf2XOn+79X/////9v//9dImVk29XZphJkXnQjA4QACBghMBVD/+1LECoMLdD8YTv+ogZGI4wX/ZVIJjnLTikwOcAdMB+AVDAswKEwVQFcMQjHxTfryDI/sD00QWYwNIsUD4kBshAhKVhDhxeQX+VdPf2/1pSv+TR/Z9HX/dnv/XwDUX7dh030RXMCuC/RYEEGgIYwA0BMMBpCmTldjZwysRbzBCC6MAkMswDB0jBY8HPqzRAw0RcjOuD5MP0GIwdAKz5QNgMHFJWvdNyqrhXyvU4oGxGQHHB47s/////////7f/+tAIEnZG2iA8wkBQ0lzQ0XA8//7UsQIg8tEPRQu/6iBb4eiAd/1ECaEMxGTMwJIWGOTxLKzB5glowK8ERMDGA3jBaQSkxGIG3OCKLqT704jKZczAsjgIIIXB4RAWhyU7dCKSeyb7rzn/////////881GLtMTrAwIGHYYmoVLmrwdGX4hGJa6GB6jfZuKQtUYWuFlmBGAbhgDYAAYACCzmBRGqhkt5KCaBN0e3lAZ0CaY0hIYZAeYLgAEAal08kclNNt/9X9X/2//9v/6AAsBZiiw6Rih4ODBsGcGqR2Y2LI5WzA//tSxAuCTNhlEK57qIE8C2ABjaS5IRWNn1RQyQw4jB9BhMEgGQwTAszKXbGOPV5o4+EIzvI4wVD8wCCoRAmEAEpCA1/p1tIh1x4hLYvKKs5K605T3L1Pcv2LvbAPAmGwiBEu7q4CfqZUxGVGOYKcTXVg0iNMikTEHIy1NM4IA5bKwAxQZM3XDJosCQ5nCsaWKhzyZCDGAAbZGdLAtLaC1qJjoWLmRUcPoUm2VtZiBMpJqYrtTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVU=" type="audio/mp3">
+    </audio>
+
+    <audio id="badSound" preload="auto">
+        <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAFAAAEygBRUVFRUVFRUVFRUVFRUVFRUVFRfX19fX19fX19fX19fX19fX19fX2oqKioqKioqKioqKioqKioqKioqNTU1NTU1NTU1NTU1NTU1NTU1NTU//////////////////////////8AAAAATGF2YzU5LjM3AAAAAAAAAAAAAAAAJAMGAAAAAAAABMoRgVESAAAAAAD/+1DEAAAJMB9DNYEAAZgc7zceYAIAACGGAQ0jU5BhjhY9YOjgMxek2wxdjXIcpLAIAmD7xAXBAMOlAxLn/KBj5QMKdlA/y5//y6gfD5QMFHawQOfE78uf+c+XD//hgANK222yWySRuNtttBI9CVl3PYjIoXDTP0Z1fCj529UFunLHk48E+ig8ToIZiCRpZ1+7hGKrZKD+o7PnZ9anbO3eK8RD+32n8/Pv//7x6/j7nPWDKY1IJjTZOhxQYTlf/oaujqxClQAFZ3l4atNoki6m//tSxAWAC8yLZf2UAAF3lO19hgywiIFgLENWu69uENRGPyOvqDo3Dd84PYseMA8TOg4Bw8pT8urtb6euK24r9ZG1UQs1SjSQufKrAUcUjF2gVtQ2wk5sYxvMlRcrPzJtSjlGX6f+vd1CAVWXdO/kkjTO3gByVlFGOiwQxIF4HHj4UhW/hBVmPjnK+FgAap7ChAtda3DRiIjRcn4x9cyMsoDJ4Z/59GATASKpRPKlHEDBA81nj6OybPvFVDC53CAEUHv3/vFLFTAGh2aET75Af0v/+1LEBQALTKNhzKRlgXWX7H2GDLjcV4g0sfdtAFWHhOVFh2TTAy5CuRGXIdmNVMGig3qZA84RpuREcbBVNjPEbNvc6Y9dDcQ4OnQ6g8Ue3fSsioGHW1uRVVdr/sUjbzVrblczrUABNVUw62NuIo6aKBkFTo+HIRSUQx/LATGboenB2WkjJ5VL67cd7l5ZwMrRoS7HcmsyXtJj+Bv2mTFWvXzdCpTdlUggbDrckoZLucg7TvRbi7TTatLRvs43yNFFtikgB3qZdU+6kJtGQyExB//7UsQHAAt8hVvMsGVBfpRsfp6ABCNI1AnHQrh86GY6jSWTEgFM/NatdDBEGYUax9uERHn+S5QjybyJSKAwacWUBw6QFVrUAWtaBUicGwoGknYGOvMIY1rJVn6exifvfR6P1KBxd7VVGutiRR3hVAWgNpSuCF1Qt/GSKjV5uK+kKSQFlKk0OBaaqIOs2qq2O1VY++WKlbvlJVa59FuVtqrqBgDDWoC0VDnAZ4SK72i1VLipJlHTfFuLhKKPfr34M6L5FQA2trtdhIJBaGwwEgQA" type="audio/mp3">
+    </audio>
+
     <div id="hud">
         <div id="lives">❤️❤️❤️❤️❤️</div>
         <div id="score">Score: 0</div>
-
         <div style="margin-top:6px; font-size:14px; color:lime; font-weight:bold;">
             🎯 Catch ONLY the GREEN balls!
         </div>
@@ -87,23 +95,17 @@ input, button {
 
     <div id="gameOver">
         <h1>Game Over</h1>
-
         <p id="finalScore"></p>
-
         <input id="name" placeholder="Enter name">
-
         <button onclick="saveScore()">Save Score</button>
         <button onclick="restart()">Restart</button>
-
         <h3>🌍 Global Leaderboard</h3>
         <ol id="board"></ol>
     </div>
-
 </div>
 
 <script type="module">
 
-// ================= FIREBASE =================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import {
   getFirestore,
@@ -127,8 +129,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ================= GAME =================
-
+// GAME ELEMENTS
 const game = document.getElementById("game");
 const basket = document.getElementById("basket");
 const livesBoard = document.getElementById("lives");
@@ -137,21 +138,21 @@ const gameOverScreen = document.getElementById("gameOver");
 const finalScore = document.getElementById("finalScore");
 const board = document.getElementById("board");
 
+const goodSound = document.getElementById("goodSound");
+const badSound = document.getElementById("badSound");
+
 let basketX = 180;
 let targetX = 180;
-
 let lives = 5;
 let score = 0;
 let speed = 4;
 let dead = false;
 
-// ================= HUD =================
 function updateHUD() {
     livesBoard.innerHTML = "❤️".repeat(lives);
     scoreBoard.innerHTML = "Score: " + score;
 }
 
-// ================= SMOOTH MOVEMENT =================
 function animateBasket() {
     basketX += (targetX - basketX) * 0.18;
 
@@ -164,7 +165,6 @@ function animateBasket() {
     requestAnimationFrame(animateBasket);
 }
 
-// ================= CONTROLS =================
 document.addEventListener("keydown", e => {
     if (e.key === "ArrowLeft") targetX -= 30;
     if (e.key === "ArrowRight") targetX += 30;
@@ -175,15 +175,11 @@ game.addEventListener("mousemove", e => {
     targetX = e.clientX - r.left - 20;
 });
 
-game.addEventListener("touchstart", handle);
-game.addEventListener("touchmove", handle);
-
-function handle(e) {
+game.addEventListener("touchmove", e => {
     const r = game.getBoundingClientRect();
     targetX = e.touches[0].clientX - r.left - 20;
-}
+});
 
-// ================= BALLS =================
 function spawnBall() {
     if (dead) return;
 
@@ -216,16 +212,20 @@ function fall(ball, green) {
         let x = parseInt(ball.style.left);
         let basketY = game.clientHeight - 80;
 
-        if (
-            y > basketY &&
-            x > basketX - 30 &&
-            x < basketX + 40
-        ) {
+        if (y > basketY && x > basketX - 30 && x < basketX + 40) {
+
             ball.remove();
             clearInterval(id);
 
-            if (green) score++;
-            else lives--;
+            if (green) {
+                score++;
+                goodSound.currentTime = 0;
+                goodSound.play();
+            } else {
+                lives--;
+                badSound.currentTime = 0;
+                badSound.play();
+            }
 
             if (score % 5 === 0) speed += 0.5;
 
@@ -237,7 +237,11 @@ function fall(ball, green) {
             ball.remove();
             clearInterval(id);
 
-            if (green) lives--;
+            if (green) {
+                lives--;
+                badSound.currentTime = 0;
+                badSound.play();
+            }
 
             updateHUD();
             checkGameOver();
@@ -246,7 +250,6 @@ function fall(ball, green) {
     }, 30);
 }
 
-// ================= GAME OVER =================
 function checkGameOver() {
     if (lives <= 0) {
         dead = true;
@@ -255,9 +258,7 @@ function checkGameOver() {
     }
 }
 
-// ================= FIREBASE =================
 window.saveScore = async function () {
-
     let name = document.getElementById("name").value || "Anon";
 
     await addDoc(collection(db, "leaderboard"), {
@@ -267,23 +268,14 @@ window.saveScore = async function () {
     });
 };
 
-// 🌍 REAL-TIME GLOBAL LEADERBOARD (FIXED)
 function loadBoardRealtime() {
-
-    const q = query(
-        collection(db, "leaderboard"),
-        orderBy("score", "desc"),
-        limit(10)
-    );
+    const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
 
     onSnapshot(q, (snapshot) => {
-
         board.innerHTML = "";
-
         let rank = 1;
 
         snapshot.forEach(doc => {
-
             const d = doc.data();
 
             let medal = "";
@@ -300,12 +292,10 @@ function loadBoardRealtime() {
     });
 }
 
-// ================= RESTART =================
 window.restart = function () {
     location.reload();
 };
 
-// ================= START =================
 setInterval(spawnBall, 700);
 updateHUD();
 animateBasket();
