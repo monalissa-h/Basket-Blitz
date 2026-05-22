@@ -27,7 +27,7 @@ A fast-paced reflex-based game where players control a moving basket to catch gr
 
 - HTML
 - JavaScript
-- C++
+- CSS
 - Firebase (for global leaderboard)
 - Base64 audio embedding
 
@@ -35,14 +35,14 @@ A fast-paced reflex-based game where players control a moving basket to catch gr
 
 ## 🚀 Motivation
 
-This project was built to pass time.
+This project was built with AI to pass time.
 
 ---
 
 ## 📦 How It Works
 
 - Core game logic is built using JavaScript and HTML
-- C++ was used for additional logic experimentation and performance learning
+- CSS was used for styling and UI behavior
 - Firebase handles real-time leaderboard storage and syncing
 - Sound effects are embedded using Base64 to avoid external file dependencies
 
