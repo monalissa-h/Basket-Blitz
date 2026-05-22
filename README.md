@@ -2,8 +2,6 @@
 
 A fast-paced reflex-based game where players control a moving basket to catch green balls while avoiding red ones. The game gets progressively harder as speed increases, testing timing, reflexes, and decision-making under pressure.
 
-![Game Preview](a_colorful_2d_game_promo_screenshot_style_image_wi.png)
-
 ---
 
 ## 🎮 Gameplay
